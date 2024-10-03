@@ -1,34 +1,30 @@
-// server.js
 const fastify = require('fastify')({ logger: true });
 const path = require('path');
+const blogRoutes = require('./routes/blogRoutes');
 
-// Routes
-fastify.get('/', async (request, reply) => {
-  reply.type('text/html').send(`
-    <html>
-      <head><title>Fastify App</title></head>
-      <body>
-        <h1>Hello, Fastify!</h1>
-        <script src="/main.js"></script>
-      </body>
-    </html>
-  `);
+fastify.register(require('fastify-static'), {
+    root: path.join(__dirname, 'public'),
+    prefix: '/'
 });
 
-// Serve static files (e.g., main.js)
-fastify.register(require('@fastify/static'), {
-  root: path.join(__dirname, 'public'),
-  prefix: '/',
+fastify.register(require('@fastify/formbody'));
+
+fastify.register(blogRoutes);
+
+fastify.setViewEngine({
+    engine: {
+        ejs: require('ejs')
+    }
 });
 
-// Run the server
 const start = async () => {
-  try {
-    await fastify.listen({ port: 3000 });
-    fastify.log.info(`Server running at http://localhost:3000`);
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
+    try {
+        await fastify.listen({ port: 3000 });
+        console.log('Server listening on http://localhost:3000');
+    } catch (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
 };
+
 start();
